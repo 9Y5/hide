@@ -1,5 +1,7 @@
 hide
 ===
+A simple program to surf the web through your server via SSH.
+
 Written in Javascript, with the help of ShellJS and NodeJS.
 
 ## To Use
