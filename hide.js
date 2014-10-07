@@ -54,8 +54,26 @@ var IP_CHECKER_URL = "http://gys.herokuapp.com/myip";
  */
 
 function setProxy(type, callback) {
+    var platform = process.platform;
+    var setProxyCommand = '';
+
+    switch(platform) {
+        case 'darwin': // for osx
+            var proxyToggle = '';
+            // convert linux's toggle terms for osx to understand.
+            if (type == 'manual') {
+                proxyToggle = 'on';
+            } else if (type == 'none') {
+                proxyToggle = 'off';
+            }
+            setProxyCommand = 'networksetup -setsocksfirewallproxystate Wi-Fi ' + proxyToggle;
+            break;
+        default: // to linux
+            setProxyCommand = "gsettings set org.gnome.system.proxy mode '" + type + "'";
+    }
+
     if (type == 'manual' || type == 'none') {
-        exec("gsettings set org.gnome.system.proxy mode '" + type + "'", function() {
+        exec(setProxyCommand, function() {
             if (callback) {
                 callback();
             }
@@ -64,7 +82,16 @@ function setProxy(type, callback) {
 }
 
 function getProxy() {
-    return exec("gsettings get org.gnome.system.proxy mode", {silent: true}).output;
+    var platform = process.platform;
+    var getProxyCommand = '';
+
+    switch(platform) {
+        case 'darwin': // for osx
+            getProxyCommand = 'networksetup -getsocksfirewallproxystate Wi-Fi';
+        default: // to linux
+            getProxyCommand = "gsettings get org.gnome.system.proxy mode";
+    }
+    return exec(getProxyCommand, {silent: true}).output;
 }
 
 function ssh() {
@@ -119,5 +146,14 @@ function exitMessage() {
 }
 
 function showIPAddress() {
-    exec('google-chrome ' + IP_CHECKER_URL);
+    var platform = process.platform;
+    var browser = '';
+    switch(platform) {
+        case 'darwin':
+            browser = '/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome';
+            break;
+        default:
+            browser = 'google-chrome';
+    }
+    exec(browser + ' ' + IP_CHECKER_URL);
 }
